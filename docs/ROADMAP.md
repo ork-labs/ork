@@ -11,10 +11,11 @@ The scope of this roadmap is the single-node **ORK Automation Kernel**. Advanced
 
 ## **Phase 1: Foundational Refactor - Aligning with the `Workload` Model**
 
-**Rationale:** The current codebase (`v0.1.2a`) is a proven `run_once` task executor. However, the master architecture is built on the more powerful and expressive `Workload`, `Process`, and `Lifecycle` abstractions. This phase is the most critical as it pays down all architectural debt and aligns the entire codebase with the project's core philosophy. It is the non-negotiable prerequisite for implementing the `ork daemon` and fulfilling the project's vision.
+**Rationale:** The current codebase (`v0.1.2a`) is a proven `run_once` task executor. However, the master architecture is built on the more powerful and expressive `Workload`, `Process`, and `Lifecycle` abstractions. This phase is the most critical as it pays down all architectural debt and aligns the entire codebase with the project's core philosophy. It is the non-negotiable prerequisite for implementing the `ork daemon` and fulfilling the project's vision. Additionally the project will be renamed to ORK/ork from GXO.
 
 *   **Milestone 1.1: Unified Abstraction Refactor**
     *   **Objective:** Replace the legacy `Task` concept with the formal `Workload`, `Process`, and `Lifecycle` structs throughout the entire codebase, including the configuration, engine, and API layers.
+    *   **Objective:** Rename project to ORK.
     *   **Outcome:** The engine's internal logic will natively understand and operate on the master architectural concepts, preparing it for future lifecycle policies like `supervise` and `event_driven`.
 
 ## **Phase 2: Hardening the Core - Comprehensive Test Suite**
