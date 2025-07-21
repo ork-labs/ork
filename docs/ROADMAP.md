@@ -1,17 +1,17 @@
-# **GXO Project Roadmap**
+# **ORK Project Roadmap**
 
-**Document ID:** GXO-ROADMAP-V2
+**Document ID:** ORK-ROADMAP-V1
 **Status:** Approved Strategic Plan
 
 ## **1. Introduction**
 
-This document outlines the high-level, strategic development plan for the GXO Automation Kernel. Its purpose is to provide a clear, phased approach to achieving a production-ready, feature-complete GXO v1.0 release. The roadmap is sequenced to ensure architectural integrity, quality, and security are established as a solid foundation before the full suite of modules is implemented.
+This document outlines the high-level, strategic development plan for the ORK Automation Kernel. Its purpose is to provide a clear, phased approach to achieving a production-ready, feature-complete ORK v1.0 release. The roadmap is sequenced to ensure architectural integrity, quality, and security are established as a solid foundation before the full suite of modules is implemented. This document reflects the udpated naming from GXO (Go Execution and Orchestration) to ORK (Orchogonal Runtime Kernel) to reflect it's intentional architectual design and philosophy.
 
-The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced, multi-node capabilities, such as the conceptually planned "GXO Fabric," are considered future work that will be explored only after the successful completion of this v1.0 plan.
+The scope of this roadmap is the single-node **ORK Automation Kernel**. Advanced, multi-node capabilities, such as the conceptually planned "ORK Fabric," are considered future work that will be explored only after the successful completion of this v1.0 plan.
 
 ## **Phase 1: Foundational Refactor - Aligning with the `Workload` Model**
 
-**Rationale:** The current codebase (`v0.1.2a`) is a proven `run_once` task executor. However, the master architecture is built on the more powerful and expressive `Workload`, `Process`, and `Lifecycle` abstractions. This phase is the most critical as it pays down all architectural debt and aligns the entire codebase with the project's core philosophy. It is the non-negotiable prerequisite for implementing the `gxo daemon` and fulfilling the project's vision.
+**Rationale:** The current codebase (`v0.1.2a`) is a proven `run_once` task executor. However, the master architecture is built on the more powerful and expressive `Workload`, `Process`, and `Lifecycle` abstractions. This phase is the most critical as it pays down all architectural debt and aligns the entire codebase with the project's core philosophy. It is the non-negotiable prerequisite for implementing the `ork daemon` and fulfilling the project's vision.
 
 *   **Milestone 1.1: Unified Abstraction Refactor**
     *   **Objective:** Replace the legacy `Task` concept with the formal `Workload`, `Process`, and `Lifecycle` structs throughout the entire codebase, including the configuration, engine, and API layers.
@@ -19,7 +19,7 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
 
 ## **Phase 2: Hardening the Core - Comprehensive Test Suite**
 
-**Rationale:** Before building the long-running `gxo daemon`, we must guarantee that the newly refactored Kernel is correct, stable, and resilient. A crash in an ephemeral `gxo run` is an inconvenience; a crash in the daemon is an outage. This phase establishes a high quality bar for all future development and provides a safety net against regressions.
+**Rationale:** Before building the long-running `ork daemon`, we must guarantee that the newly refactored Kernel is correct, stable, and resilient. A crash in an ephemeral `ork run` is an inconvenience; a crash in the daemon is an outage. This phase establishes a high quality bar for all future development and provides a safety net against regressions.
 
 *   **Milestone 2.1: Full Unit & Integration Test Coverage**
     *   **Objective:** Achieve high test coverage (>90%) for all core Kernel packages (`internal/engine`, `internal/config`, `internal/state`, etc.).
@@ -31,27 +31,27 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
 
 ## **Phase 3: Service Enablement & Foundational Security**
 
-**Rationale:** This phase implements the `gxo daemon`, transforming GXO from an ephemeral task runner into a true, long-running Automation Kernel. It focuses on the non-negotiable features required for production deployments: a persistent state store and a secure control plane. Security is built-in from the start, not added on later.
+**Rationale:** This phase implements the `ork daemon`, transforming ORK from an ephemeral task runner into a true, long-running Automation Kernel. It focuses on the non-negotiable features required for production deployments: a persistent state store and a secure control plane. Security is built-in from the start, not added on later.
 
 *   **Milestone 3.1: Persistent & Encrypted State Store**
     *   **Objective:** Replace the volatile in-memory state store with a persistent, production-grade alternative.
     *   **Key Features:** Create a `state.Store` implementation using a file-based, transactional embedded database like **BoltDB**. The store will be responsible for persisting active `Workload` configurations and their states. Implement **AEAD (AES-GCM) encryption** for the state file at rest, with the encryption key provided to the daemon via a secure mechanism (e.g., environment variable).
 
-*   **Milestone 3.2: The `gxo daemon` and `supervise` Lifecycle Reconciler**
-    *   **Objective:** Implement the core `gxo daemon` process and the first advanced lifecycle, `supervise`.
-    *   **Key Features:** Implement the `gxo daemon` command, which starts a gRPC API server for control. Create the `supervise` lifecycle reconciler, including robust **restart-with-exponential-backoff** logic to prevent crash loops.
+*   **Milestone 3.2: The `ork daemon` and `supervise` Lifecycle Reconciler**
+    *   **Objective:** Implement the core `ork daemon` process and the first advanced lifecycle, `supervise`.
+    *   **Key Features:** Implement the `ork daemon` command, which starts a gRPC API server for control. Create the `supervise` lifecycle reconciler, including robust **restart-with-exponential-backoff** logic to prevent crash loops.
 
 *   **Milestone 3.3: Control Plane Security (mTLS with Simple Setup)**
-    *   **Objective:** Secure the `gxo daemon`'s gRPC control plane with a practical, developer-friendly approach.
-    *   **Key Features:** Implement **mandatory mTLS** on the gRPC server. To simplify setup for dev/test environments, the daemon will support an **auto-generation mode** (`gxo daemon --generate-certs`) to create a self-signed CA and server/client certificates. For production, it will support the `pki` model using pre-existing CA-signed certificates. This ensures all communication is encrypted from day one, while avoiding initial setup pain.
+    *   **Objective:** Secure the `ork daemon`'s gRPC control plane with a practical, developer-friendly approach.
+    *   **Key Features:** Implement **mandatory mTLS** on the gRPC server. To simplify setup for dev/test environments, the daemon will support an **auto-generation mode** (`ork daemon --generate-certs`) to create a self-signed CA and server/client certificates. For production, it will support the `pki` model using pre-existing CA-signed certificates. This ensures all communication is encrypted from day one, while avoiding initial setup pain.
 
-*   **Milestone 3.4: The `gxo ctl` Command and Basic RBAC**
+*   **Milestone 3.4: The `ork ctl` Command and Basic RBAC**
     *   **Objective:** Provide the client-side tooling to interact with the secure daemon.
-    *   **Key Features:** Implement the `gxo ctl apply` and `gxo ctl remove` commands, which connect to the daemon over mTLS. Implement a basic gRPC interceptor that performs initial Role-Based Access Control (RBAC) by matching the **Subject Common Name (CN)** from the client certificate against an allowlist in the daemon's configuration.
+    *   **Key Features:** Implement the `ork ctl apply` and `ork ctl remove` commands, which connect to the daemon over mTLS. Implement a basic gRPC interceptor that performs initial Role-Based Access Control (RBAC) by matching the **Subject Common Name (CN)** from the client certificate against an allowlist in the daemon's configuration.
 
 ## **Phase 4: Core Module Implementation (Layers 1-4)**
 
-**Rationale:** With the daemon framework established, this phase focuses on implementing the foundational layers of the GXO Standard Library. These low-level modules are the prerequisites for nearly all advanced automation patterns and must exist before higher-level modules that depend on them can be built. This phase respects the GXO-AM's layered dependency model.
+**Rationale:** With the daemon framework established, this phase focuses on implementing the foundational layers of the ORK Standard Library. These low-level modules are the prerequisites for nearly all advanced automation patterns and must exist before higher-level modules that depend on them can be built. This phase respects the ORK-AM's layered dependency model.
 
 *   **Milestone 4.1: Foundational System Primitives (Layer 1)**
     *   **Objective:** Implement the core modules for interacting with the local system and controlling workflow logic.
@@ -62,7 +62,7 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
     *   **Modules:** `connection:*` suite (`open`, `listen`, `read`, `write`, `close`), `http:listen`, `http:respond`.
 
 *   **Milestone 4.3: Core Data Plane & Module Alignment (Layer 4)**
-    *   **Objective:** Implement the essential ETL modules needed to process data from files and API responses, and align existing module names with the canonical GXO-SL specification.
+    *   **Objective:** Implement the essential ETL modules needed to process data from files and API responses, and align existing module names with the canonical ORK-SL specification.
     *   **Modules:** `data:parse` (with `json` and `text_lines` support), `data:map`, `data:filter`.
     *   **Action: Module Renaming**
         *   Rename `generate:from_list` module to `data:generate_from_list`.
@@ -96,18 +96,18 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
 
 *   **Milestone 6.2: Human-in-the-Loop (`Resume Context`)**
     *   **Objective:** Implement the `Resume Context` primitive to enable interactive, approval-based workflows.
-    *   **Key Features:** Implement the `control:wait_for_signal` module. The daemon will manage unique tokens, persist the state of paused workflows, and the `gxo ctl resume` command will inject data to resume execution.
+    *   **Key Features:** Implement the `control:wait_for_signal` module. The daemon will manage unique tokens, persist the state of paused workflows, and the `ork ctl resume` command will inject data to resume execution.
 
 *   **Milestone 6.3: The Playbook Mocking Framework**
-    *   **Objective:** Introduce a first-class, GXO-native testing and validation experience.
+    *   **Objective:** Introduce a first-class, ORK-native testing and validation experience.
     *   **Key Features:**
-        *   A `gxo test` command that discovers and executes playbooks matching `*.test.gxo.yaml`, providing structured PASS/FAIL output.
+        *   A `ork test` command that discovers and executes playbooks matching `*.test.ork.yaml`, providing structured PASS/FAIL output.
         *   A `test:mock_http_server` module to stand up a temporary HTTP server for testing `http:request` workloads without network access.
         *   The `test:assert` module is now the canonical assertion tool, replacing `control:assert` for testing purposes.
 
 ## **Phase 7: Production Hardening & Advanced Security**
 
-**Rationale:** With a feature-complete and testable platform, this final phase implements advanced security controls focused on hardening the workload execution environment and securing the module supply chain, preparing GXO for high-security production deployments.
+**Rationale:** With a feature-complete and testable platform, this final phase implements advanced security controls focused on hardening the workload execution environment and securing the module supply chain, preparing ORK for high-security production deployments.
 
 *   **Milestone 7.1: Workload Sandboxing (`security_context`)**
     *   **Objective:** Implement OS-level sandboxing for workloads as defined in the `security_context` configuration block.
@@ -115,7 +115,7 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
 
 *   **Mil.estone 7.2: Module Signing & Verification**
     *   **Objective:** Implement supply chain security by verifying the cryptographic signatures of modules before execution.
-    *   **Key Features:** Create tooling to sign module binaries (e.g., via `cosign`). The `gxo daemon` will be configured with trusted public keys and a `fail-closed` policy. The engine will verify module signatures before execution, rejecting any that are invalid or untrusted.
+    *   **Key Features:** Create tooling to sign module binaries (e.g., via `cosign`). The `ork daemon` will be configured with trusted public keys and a `fail-closed` policy. The engine will verify module signatures before execution, rejecting any that are invalid or untrusted.
 
 ---
 
@@ -145,7 +145,7 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
 *   **Key Milestones:**
     1.  **Implement Core L1 Modules:** `exec`, `filesystem:write`.
     2.  **Implement Core L2/L4 Modules:** `connection:listen`, `connection:read`, `data:map`. These are essential for the event-driven demo.
-    3.  **Implement Module Signature Verification:** The MVK must include the `gxo-admin sign-module` tool and the kernel-side logic to verify at least one custom module, proving the supply chain security concept.
+    3.  **Implement Module Signature Verification:** The MVK must include the `ork-admin sign-module` tool and the kernel-side logic to verify at least one custom module, proving the supply chain security concept.
 
 #### **MVK Pillar 4: Guaranteed Inter-Workload Channels (IPC)**
 
@@ -174,9 +174,9 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
 
 ---
 
-# **GXO Master Engineering Plan: Phase 1**
+# **ORK Master Engineering Plan: Phase 1**
 
-**Document ID:** GXO-ENG-PLAN-P1
+**Document ID:** ORK-ENG-PLAN-P1
 **Version:** 3.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -185,13 +185,13 @@ The scope of this roadmap is the single-node **GXO Automation Kernel**. Advanced
 
 ### **Objective**
 
-This foundational phase refactors the entire codebase to align with the master architecture's core abstractions: the `Workload`, `Process`, and `Lifecycle`. The current `Task` struct is a specific implementation of a `run_once` workload. This refactor makes the engine's core logic lifecycle-aware, a non-negotiable prerequisite for implementing the `gxo daemon` and fulfilling the project's vision.
+This foundational phase refactors the entire codebase to align with the master architecture's core abstractions: the `Workload`, `Process`, and `Lifecycle`. The current `Task` struct is a specific implementation of a `run_once` workload. This refactor makes the engine's core logic lifecycle-aware, a non-negotiable prerequisite for implementing the `ork daemon` and fulfilling the project's vision.
 
 ### **Rationale**
 
 The existing codebase is a stable and proven `run_once` task executor. However, to evolve into a true Automation Kernel capable of managing long-running services and event-driven workflows, the core data models must be elevated. A piecemeal approach of adding new features on top of the old `Task` model would lead to technical debt, inconsistent APIs, and a confusing user experience.
 
-This phase is executed first to pay down all architectural debt upfront. By establishing the `Workload` as the single, unified primitive, we ensure that all future development—from the `gxo daemon` to new modules—is built upon a consistent, robust, and philosophically sound foundation. This is a "measure twice, cut once" approach that prioritizes long-term architectural integrity over short-term feature velocity.
+This phase is executed first to pay down all architectural debt upfront. By establishing the `Workload` as the single, unified primitive, we ensure that all future development—from the `ork daemon` to new modules—is built upon a consistent, robust, and philosophically sound foundation. This is a "measure twice, cut once" approach that prioritizes long-term architectural integrity over short-term feature velocity.
 
 ---
 
@@ -217,7 +217,7 @@ This phase is executed first to pay down all architectural debt upfront. By esta
         ```go
         package config
 
-        // LifecyclePolicy defines how the GXO kernel manages a workload's execution.
+        // LifecyclePolicy defines how the ORK kernel manages a workload's execution.
         type LifecyclePolicy struct {
             // Policy is the mandatory execution strategy.
             // Valid values: "run_once", "supervise", "event_driven", "scheduled".
@@ -241,7 +241,7 @@ This phase is executed first to pay down all architectural debt upfront. By esta
     *   **Action:** Perform a comprehensive refactor of the core data structures. The `Task` struct will be removed and replaced by `Workload` and `Process`. The top-level `Playbook` will be updated to use `workloads` instead of `tasks`.
     *   **Implementation Detail (Before):**
         ```go
-        // Playbook represents the top-level structure of a GXO playbook YAML file.
+        // Playbook represents the top-level structure of a ORK playbook YAML file.
         type Playbook struct {
             Name          string                 `yaml:"name"`
             SchemaVersion string                 `yaml:"schemaVersion"`
@@ -262,13 +262,13 @@ This phase is executed first to pay down all architectural debt upfront. By esta
         ```go
         // Process defines the logic of a workload: what it does.
         type Process struct {
-            // Module is the name of the registered GXO module to execute. Formerly 'type'.
+            // Module is the name of the registered ORK module to execute. Formerly 'type'.
             Module string                 `yaml:"module"`
             // Params is a map of key-value pairs passed to the module.
             Params map[string]interface{} `yaml:"params,omitempty"`
         }
 
-        // Workload is the atomic unit of automation in GXO. It fuses a Process with a Lifecycle.
+        // Workload is the atomic unit of automation in ORK. It fuses a Process with a Lifecycle.
         type Workload struct {
             // Name is the user-defined identifier for the workload.
             Name          string                 `yaml:"name"`
@@ -290,7 +290,7 @@ This phase is executed first to pay down all architectural debt upfront. By esta
             InternalID    string                 `yaml:"-"`
         }
 
-        // Playbook represents the top-level structure of a GXO playbook YAML file.
+        // Playbook represents the top-level structure of a ORK playbook YAML file.
         type Playbook struct {
             Name          string                 `yaml:"name"`
             SchemaVersion string                 `yaml:"schemaVersion"`
@@ -308,9 +308,9 @@ Of course. Here is the detailed engineering plan for Phase 2, which directly fol
 
 ---
 
-# **GXO Master Engineering Plan: Phase 2**
+# **ORK Master Engineering Plan: Phase 2**
 
-**Document ID:** GXO-ENG-PLAN-P2
+**Document ID:** ORK-ENG-PLAN-P2
 **Version:** 3.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -319,11 +319,11 @@ Of course. Here is the detailed engineering plan for Phase 2, which directly fol
 
 ### **Objective**
 
-Before implementing the `gxo daemon` or other new features, establish a comprehensive, production-grade test suite for the newly refactored `v1.0.0` foundation. This phase creates all necessary `_test.go` files, ensuring correctness, concurrency safety, and performance of the existing codebase. It is a dedicated phase to pay down any "testing debt" and establish a high quality bar for all future development.
+Before implementing the `ork daemon` or other new features, establish a comprehensive, production-grade test suite for the newly refactored `v1.0.0` foundation. This phase creates all necessary `_test.go` files, ensuring correctness, concurrency safety, and performance of the existing codebase. It is a dedicated phase to pay down any "testing debt" and establish a high quality bar for all future development.
 
 ### **Rationale**
 
-The Phase 1 refactor fundamentally changes the core data structures and logic of the GXO engine. The system as a whole needs a rigorous, end-to-end validation to confirm that all refactored parts integrate correctly. This phase ensures that the engine is not just functional, but also resilient against common issues like race conditions, deadlocks, and invalid user input. Building this test suite now provides a safety net that will catch regressions as we move into more complex feature development.
+The Phase 1 refactor fundamentally changes the core data structures and logic of the ORK engine. The system as a whole needs a rigorous, end-to-end validation to confirm that all refactored parts integrate correctly. This phase ensures that the engine is not just functional, but also resilient against common issues like race conditions, deadlocks, and invalid user input. Building this test suite now provides a safety net that will catch regressions as we move into more complex feature development.
 
 ---
 
@@ -335,15 +335,15 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
 
 **Impacted Files & Detailed Changes:**
 
-*   **New File: `cmd/gxo/main_test.go`**
+*   **New File: `cmd/ork/main_test.go`**
     *   **Action:** Create a new test file dedicated to testing the `main` package's handler functions, `runExecuteCommand` and `runValidateCommand`.
     *   **Implementation Detail:** These tests will involve mocking system-level functions to isolate the command logic. A common pattern is to replace `os.Exit` with a function that records the exit code in a variable. `stdout` and `stderr` can be captured by redirecting `os.Stdout` and `os.Stderr` to an in-memory buffer (`bytes.Buffer`) during the test.
     *   **Required Test Cases:**
         1.  **`TestRunExecute_Success`**: Provide a valid, simple `run_once` playbook. Verify that the final exit code is `0` and that key success messages are printed to the captured `stdout`.
         2.  **`TestRunExecute_ValidationFailure`**: Provide a playbook with a clear schema error (e.g., a required field is missing). Verify that the exit code is non-zero (e.g., `ExitUsageError` or `ExitFailure`) and that the captured `stderr` contains a clear "validation failed" error message.
         3.  **`TestRunExecute_RuntimeFailure`**: Provide a valid playbook where a workload is designed to fail (e.g., `exec` a non-existent command). Verify the exit code is `1` and `stderr` contains the failure details.
-        4.  **`TestRunValidate_Success`**: Test the `gxo validate` command with a valid playbook. Verify exit code `0` and a "validation successful" message.
-        5.  **`TestRunValidate_Failure`**: Test `gxo validate` with an invalid playbook. Verify exit code `1` and that `stderr` contains the validation error details.
+        4.  **`TestRunValidate_Success`**: Test the `ork validate` command with a valid playbook. Verify exit code `0` and a "validation successful" message.
+        5.  **`TestRunValidate_Failure`**: Test `ork validate` with an invalid playbook. Verify exit code `1` and that `stderr` contains the validation error details.
 
 *   **New File: `internal/command/command_test.go`**
     *   **Action:** Create a new test file to exhaustively test the `defaultRunner.Run` method.
@@ -359,7 +359,7 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
     *   **Implementation Detail:** Write separate test functions for *each* specific validation rule, providing minimal playbook snippets that trigger the error. This makes tests easy to debug and maintain.
     *   **Required Test Cases:**
         1.  **`TestValidate_DependencyCycle`**: Test with a playbook that has a clear A -> B -> A dependency (e.g., `workload_A` depends on `workload_B` via a `when` clause, and `workload_B` depends on `workload_A`). Assert a cycle error is returned.
-        2.  **`TestValidate_SelfReference`**: Test a workload that depends on itself (e.g., `when: "{{ ._gxo.workloads.my_workload.status == 'Completed' }}"`). Assert an error is returned.
+        2.  **`TestValidate_SelfReference`**: Test a workload that depends on itself (e.g., `when: "{{ ._ork.workloads.my_workload.status == 'Completed' }}"`). Assert an error is returned.
         3.  **`TestValidate_InvalidIdentifier`**: Test with invalid names for `register` or `loop_var` that do not match the identifier regex. Assert an error.
         4.  **`TestValidate_BadDurationString`**: Test with an invalid format in a `retry.delay` or `timeout` field (e.g., `"5xyz"`). Assert an error.
         5.  **`TestValidate_UndefinedReference`**: Test a workload that depends on a workload name that does not exist. Assert an error.
@@ -384,14 +384,14 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
     *   **Action:** Perform a full review and update of all existing engine-level integration tests.
     *   **Detailed Changes:**
         1.  Change all playbook YAML in these tests to use the new `workloads:`, `process:`, and `lifecycle:` syntax.
-        2.  Update assertions that check registered state to look for `_gxo.workloads...` instead of `_gxo.tasks...`.
+        2.  Update assertions that check registered state to look for `_ork.workloads...` instead of `_ork.tasks...`.
         3.  Ensure that tests for `when`, `loop`, and `retry` continue to pass with the new `Workload` struct.
 
 ---
 
-# **GXO Master Engineering Plan: Phase 2**
+# **ORK Master Engineering Plan: Phase 2**
 
-**Document ID:** GXO-ENG-PLAN-P2
+**Document ID:** ORK-ENG-PLAN-P2
 **Version:** 3.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -400,11 +400,11 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
 
 ### **Objective**
 
-Before implementing the `gxo daemon` or other new features, establish a comprehensive, production-grade test suite for the newly refactored `v1.0.0` foundation. This phase creates all necessary `_test.go` and `_bench_test.go` files, ensuring correctness, concurrency safety, and performance of the existing codebase. It is a dedicated phase to pay down any "testing debt" and establish a high quality bar for all future development.
+Before implementing the `ork daemon` or other new features, establish a comprehensive, production-grade test suite for the newly refactored `v1.0.0` foundation. This phase creates all necessary `_test.go` and `_bench_test.go` files, ensuring correctness, concurrency safety, and performance of the existing codebase. It is a dedicated phase to pay down any "testing debt" and establish a high quality bar for all future development.
 
 ### **Rationale**
 
-The Phase 1 refactor fundamentally changes the core data structures and logic of the GXO engine. While individual components may have tests, the system as a whole needs a rigorous, end-to-end validation to confirm that all refactored parts integrate correctly. This phase ensures that the engine is not just functional, but also resilient against common issues like race conditions, deadlocks, and invalid user input. Building this test suite now provides a safety net that will catch regressions as we move into more complex feature development in subsequent phases.
+The Phase 1 refactor fundamentally changes the core data structures and logic of the ORK engine. While individual components may have tests, the system as a whole needs a rigorous, end-to-end validation to confirm that all refactored parts integrate correctly. This phase ensures that the engine is not just functional, but also resilient against common issues like race conditions, deadlocks, and invalid user input. Building this test suite now provides a safety net that will catch regressions as we move into more complex feature development in subsequent phases.
 
 ---
 
@@ -412,11 +412,11 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
 
 **Objective:** Achieve high test coverage (>90%) for all core Kernel packages, validating the behavior of the refactored engine from the CLI down to the core logic.
 
-**Rationale:** This milestone ensures that every critical component of the `gxo run` command's execution path is validated. By testing the CLI, system abstractions, configuration loading, and engine orchestration, we build a solid, verifiable baseline before adding new features.
+**Rationale:** This milestone ensures that every critical component of the `ork run` command's execution path is validated. By testing the CLI, system abstractions, configuration loading, and engine orchestration, we build a solid, verifiable baseline before adding new features.
 
 **Impacted Files & Detailed Changes:**
 
-*   **New File: `cmd/gxo/main_test.go`**
+*   **New File: `cmd/ork/main_test.go`**
     *   **Action:** Create a test file for the `main` package's handlers. This requires mocking system-level functions like `os.Exit` and capturing `stdout`/`stderr` to verify CLI behavior without terminating the test process.
     *   **Implementation Detail:** A test helper function will be created to orchestrate this.
         ```go
@@ -438,8 +438,8 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
         *   `TestRunExecute_Success`: Provide a valid, simple `run_once` playbook. Verify the exit code is `0` and key success messages are printed to `stdout`.
         *   `TestRunExecute_ValidationFailure`: Provide a playbook with a schema error. Verify the exit code is non-zero and `stderr` contains a clear "validation failed" error.
         *   `TestRunExecute_RuntimeFailure`: Provide a valid playbook where a workload is designed to fail. Verify the exit code is non-zero and `stderr` contains the failure details.
-        *   `TestRunValidate_Success`: Test `gxo validate` with a valid playbook. Verify exit code `0`.
-        *   `TestRunValidate_Failure`: Test `gxo validate` with an invalid playbook. Verify a non-zero exit code.
+        *   `TestRunValidate_Success`: Test `ork validate` with a valid playbook. Verify exit code `0`.
+        *   `TestRunValidate_Failure`: Test `ork validate` with an invalid playbook. Verify a non-zero exit code.
 
 *   **New File: `internal/command/command_test.go`**
     *   **Action:** Exhaustively test the `defaultRunner.Run` method.
@@ -458,11 +458,11 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
         *   `TestValidate_SelfReference`: Test a workload depending on its own status. Assert an error.
         *   `TestValidate_InvalidIdentifier`: Test with invalid names for `register` or `loop_var` (e.g., "invalid-name"). Assert an error.
         *   `TestValidate_UndefinedReference`: Test a workload that depends on a non-existent workload name. Assert an error.
-        *   `TestValidate_InvalidLifecycleForRun`: Test a workload with `lifecycle: { policy: supervise }`. Assert `ValidatePlaybookStructure` returns an error stating this is not supported by `gxo run`.
+        *   `TestValidate_InvalidLifecycleForRun`: Test a workload with `lifecycle: { policy: supervise }`. Assert `ValidatePlaybookStructure` returns an error stating this is not supported by `ork run`.
 
 *   **New File: `internal/engine/channel_manager_test.go`**
     *   **Action:** Test the `ChannelManager`'s logic for creating and managing streaming channels and their synchronization `WaitGroup`s.
-    *   **Rationale:** This component is the heart of GXO's streaming data plane. Incorrect `WaitGroup` handling would lead to deadlocks or race conditions.
+    *   **Rationale:** This component is the heart of ORK's streaming data plane. Incorrect `WaitGroup` handling would lead to deadlocks or race conditions.
     *   **Required Test Cases:**
         *   `TestCreateChannels_FanInFanOut`: Build a mock DAG with a fan-out producer (one output) and a fan-in consumer (multiple inputs). Call `CreateChannels` and assert the internal maps of the `ChannelManager` are wired correctly (correct number of channels, correct producer/consumer relationships, correct `WaitGroup` counts).
         *   `TestManagedChannel_OverflowBlock`: Create a `managedChannel` with a buffer size of 1 and a "block" policy. Fill the buffer, then start a new goroutine to write to it again. Assert the goroutine blocks. Then, read from the channel and assert the goroutine unblocks.
@@ -488,7 +488,7 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
 
 *   **New File: `internal/config/fuzz_test.go`**
     *   **Action:** Create a fuzz test for `config.LoadPlaybook` using Go's built-in `testing.F` framework.
-    *   **Rationale:** The YAML parser and validation logic are primary attack surfaces. A malformed playbook should never cause the GXO engine to panic.
+    *   **Rationale:** The YAML parser and validation logic are primary attack surfaces. A malformed playbook should never cause the ORK engine to panic.
     *   **Implementation Detail:**
         ```go
         // internal/config/fuzz_test.go
@@ -496,7 +496,7 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
 
         import (
             "testing"
-            "github.com/gxo-labs/gxo/internal/config"
+            "github.com/ork-labs/ork/internal/config"
         )
 
         func FuzzLoadPlaybook(f *testing.F) {
@@ -552,13 +552,13 @@ The Phase 1 refactor fundamentally changes the core data structures and logic of
 
 Of course. With the core engine refactored and hardened, we can now proceed to build the daemon itself.
 
-This document represents the detailed engineering plan for **Phase 3** of the GXO Project Roadmap (ID: GXO-ROADMAP-V2). It is designed to be an exhaustive guide for implementing the `gxo daemon` and its foundational security and state management capabilities.
+This document represents the detailed engineering plan for **Phase 3** of the ORK Project Roadmap (ID: ORK-ROADMAP-V2). It is designed to be an exhaustive guide for implementing the `ork daemon` and its foundational security and state management capabilities.
 
 ---
 
-# **GXO Master Engineering Plan: Phase 3**
+# **ORK Master Engineering Plan: Phase 3**
 
-**Document ID:** GXO-ENG-PLAN-P3
+**Document ID:** ORK-ENG-PLAN-P3
 **Version:** 3.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -567,11 +567,11 @@ This document represents the detailed engineering plan for **Phase 3** of the GX
 
 ### **Objective**
 
-Implement the `gxo daemon`, transforming GXO from an ephemeral task runner into a true, long-running Automation Kernel. This phase focuses on the non-negotiable features required for production deployments: a persistent state store, a secure control plane, and the ability to manage supervised workloads. Security is built-in from the start, not added on later.
+Implement the `ork daemon`, transforming ORK from an ephemeral task runner into a true, long-running Automation Kernel. This phase focuses on the non-negotiable features required for production deployments: a persistent state store, a secure control plane, and the ability to manage supervised workloads. Security is built-in from the start, not added on later.
 
 ### **Rationale**
 
-The architectural vision of GXO as a unified runtime for services, events, and tasks can only be realized through a persistent, long-running daemon process. This phase builds that daemon, its secure control plane, and the core lifecycle reconcilers, unlocking the platform's most powerful capabilities and preparing it for production use. A secure-by-default posture is established early to ensure all subsequent features are built upon a hardened foundation.
+The architectural vision of ORK as a unified runtime for services, events, and tasks can only be realized through a persistent, long-running daemon process. This phase builds that daemon, its secure control plane, and the core lifecycle reconcilers, unlocking the platform's most powerful capabilities and preparing it for production use. A secure-by-default posture is established early to ensure all subsequent features are built upon a hardened foundation.
 
 ---
 
@@ -579,7 +579,7 @@ The architectural vision of GXO as a unified runtime for services, events, and t
 
 **Objective:** Replace the volatile in-memory state store with a persistent, production-grade alternative using BoltDB.
 
-**Rationale:** A daemon must survive restarts and maintain its state. The `MemoryStateStore` is insufficient for this purpose. BoltDB is chosen for its simplicity, transactional guarantees, and lack of external dependencies, making it a perfect fit for a self-contained GXO daemon. Encryption at rest is a foundational security requirement.
+**Rationale:** A daemon must survive restarts and maintain its state. The `MemoryStateStore` is insufficient for this purpose. BoltDB is chosen for its simplicity, transactional guarantees, and lack of external dependencies, making it a perfect fit for a self-contained ORK daemon. Encryption at rest is a foundational security requirement.
 
 **Impacted Files & Detailed Changes:**
 
@@ -680,16 +680,16 @@ The architectural vision of GXO as a unified runtime for services, events, and t
         
         // ... Implement other state.Store methods (Delete, Load, GetAll, Close) ...
         ```
-*   **New Directory: `cmd/gxo-admin/`**
-*   **New File: `cmd/gxo-admin/rekey.go`**
-    *   **Action:** Create an `gxo-admin state rekey` command for offline state re-encryption.
+*   **New Directory: `cmd/ork-admin/`**
+*   **New File: `cmd/ork-admin/rekey.go`**
+    *   **Action:** Create an `ork-admin state rekey` command for offline state re-encryption.
     *   **Implementation Detail:** The command will take flags for the state file path, old key, and new key. It will open the BoltDB, iterate over every key-value pair, decrypt with the old key, re-encrypt with the new key, and write the new value back in a single transaction.
 
 ---
 
-### **Milestone 3.2: The `gxo daemon` and `supervise` Lifecycle Reconciler**
+### **Milestone 3.2: The `ork daemon` and `supervise` Lifecycle Reconciler**
 
-**Objective:** Implement the core `gxo daemon` process and the first advanced lifecycle, `supervise`.
+**Objective:** Implement the core `ork daemon` process and the first advanced lifecycle, `supervise`.
 
 **Rationale:** This milestone brings the Automation Kernel to life as a long-running process. The `supervise` lifecycle is implemented first as it's the most common use case for a daemon and provides a clear pattern for managing persistent workloads.
 
@@ -700,8 +700,8 @@ The architectural vision of GXO as a unified runtime for services, events, and t
     *   **Implementation Detail:**
         ```protobuf
         syntax = "proto3";
-        package gxo.daemon.v1;
-        option go_package = "github.com/gxo-labs/gxo/pkg/gxo/v1/api";
+        package ork.daemon.v1;
+        option go_package = "github.com/ork-labs/ork/pkg/ork/v1/api";
 
         service GxoDaemon {
           // ApplyPlaybook applies a playbook, causing the daemon to add/update/remove workloads.
@@ -729,8 +729,8 @@ The architectural vision of GXO as a unified runtime for services, events, and t
           string status = 1;
         }
         ```
-*   **New File: `cmd/gxo/daemon.go`**
-    *   **Action:** Create the `gxo daemon` Cobra command.
+*   **New File: `cmd/ork/daemon.go`**
+    *   **Action:** Create the `ork daemon` Cobra command.
     *   **Implementation Detail:** This command will initialize the engine (with the new BoltDB state store), start the gRPC server in a goroutine, and then start the main daemon controller, blocking until the process is terminated.
 *   **New Directory: `internal/daemon/`**
 *   **New File: `internal/daemon/controller.go`**
@@ -782,7 +782,7 @@ The architectural vision of GXO as a unified runtime for services, events, and t
 
 ### **Milestone 3.3: Control Plane Security (mTLS with Simple Setup)**
 
-**Objective:** Secure the `gxo daemon`'s gRPC control plane with mandatory mTLS, providing a developer-friendly way to generate self-signed certificates for testing.
+**Objective:** Secure the `ork daemon`'s gRPC control plane with mandatory mTLS, providing a developer-friendly way to generate self-signed certificates for testing.
 
 **Rationale:** A control plane that accepts unauthenticated commands is an unacceptable security risk. mTLS is implemented from the very first version of the daemon to enforce strong, cryptographic identity for all clients. The auto-generation feature removes the high barrier to entry that PKI management can present for local development and testing.
 
@@ -791,8 +791,8 @@ The architectural vision of GXO as a unified runtime for services, events, and t
 *   **New Directory: `internal/pki/`**
 *   **New File: `internal/pki/generate.go`**
     *   **Action:** Add functions to programmatically generate a self-signed CA, and server/client certificates signed by that CA, using Go's `crypto/x509` and `crypto/tls` packages. This avoids shelling out to `openssl`.
-*   **`cmd/gxo/daemon.go`**
-    *   **Action:** Add a `--generate-certs` flag. When used, it calls the `pki.generate` helpers to create `ca.pem`, `server.pem`, `server.key`, `client.pem`, `client.key` in the GXO config directory, prints instructions, and then exits.
+*   **`cmd/ork/daemon.go`**
+    *   **Action:** Add a `--generate-certs` flag. When used, it calls the `pki.generate` helpers to create `ca.pem`, `server.pem`, `server.key`, `client.pem`, `client.key` in the ORK config directory, prints instructions, and then exits.
 *   **New File: `internal/daemon/server.go`**
     *   **Action:** Implement the gRPC server, loading TLS credentials at startup and requiring client certificate verification.
     *   **Implementation Detail:**
@@ -819,17 +819,17 @@ The architectural vision of GXO as a unified runtime for services, events, and t
 
 ---
 
-### **Milestone 3.4: The `gxo ctl` Command and Basic RBAC**
+### **Milestone 3.4: The `ork ctl` Command and Basic RBAC**
 
 **Objective:** Provide the client-side tooling to interact with the secure daemon and implement an initial, simple RBAC mechanism.
 
-**Rationale:** The `gxo ctl` tool is the user's primary interface to the daemon. It must be able to handle mTLS authentication seamlessly. A basic RBAC system based on certificate identity is implemented to enforce the principle of least privilege from the start.
+**Rationale:** The `ork ctl` tool is the user's primary interface to the daemon. It must be able to handle mTLS authentication seamlessly. A basic RBAC system based on certificate identity is implemented to enforce the principle of least privilege from the start.
 
 **Impacted Files & Detailed Changes:**
 
-*   **New Directory: `cmd/gxo-ctl/`**
-*   **`main.go`, `apply.go`, `remove.go`:** Create the `gxo-ctl` binary with its initial subcommands. The root command will have persistent flags for `--server`, `--ca-cert`, `--client-cert`, and `--client-key`.
-*   **New File: `cmd/gxo-ctl/client.go`**
+*   **New Directory: `cmd/ork-ctl/`**
+*   **`main.go`, `apply.go`, `remove.go`:** Create the `ork-ctl` binary with its initial subcommands. The root command will have persistent flags for `--server`, `--ca-cert`, `--client-cert`, and `--client-key`.
+*   **New File: `cmd/ork-ctl/client.go`**
     *   **Action:** Create a helper function to build the gRPC client connection with the required mTLS credentials.
 *   **New File: `internal/daemon/interceptor/auth.go`**
     *   **Action:** Create a unary gRPC interceptor for authorization.
@@ -868,13 +868,13 @@ The architectural vision of GXO as a unified runtime for services, events, and t
             return handler(ctx, req)
         }
         ```
-*   **`internal/daemon/controller.go`:** The daemon controller will be responsible for loading the RBAC policy map from the main GXO configuration file at startup and passing it to the interceptor.
+*   **`internal/daemon/controller.go`:** The daemon controller will be responsible for loading the RBAC policy map from the main ORK configuration file at startup and passing it to the interceptor.
 
 ---
 
-# **GXO Master Engineering Plan: Phase 4**
+# **ORK Master Engineering Plan: Phase 4**
 
-**Document ID:** GXO-ENG-PLAN-P4
+**Document ID:** ORK-ENG-PLAN-P4
 **Version:** 3.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -883,11 +883,11 @@ The architectural vision of GXO as a unified runtime for services, events, and t
 
 ### **Objective**
 
-With the daemon framework in place, this phase expands its capabilities to handle reactive and interactive workflows, which are core to GXO's vision of replacing complex glue code in areas like security orchestration and multi-stage deployments. This requires building out the lower layers of the GXO-AM and the corresponding lifecycle reconcilers.
+With the daemon framework in place, this phase expands its capabilities to handle reactive and interactive workflows, which are core to ORK's vision of replacing complex glue code in areas like security orchestration and multi-stage deployments. This requires building out the lower layers of the ORK-AM and the corresponding lifecycle reconcilers.
 
 ### **Rationale**
 
-Modern automation is increasingly reactive. Systems must respond to external events—a security alert, a git push, an incoming API call—not just run on a schedule. This phase delivers the foundational networking modules (`connection:*`, `http:*`) and the `event_driven` lifecycle, allowing GXO to act as a native network server. It also implements the `control:wait_for_signal` module, a powerful primitive for building workflows that require human approval, a common and difficult pattern to implement with traditional tools.
+Modern automation is increasingly reactive. Systems must respond to external events—a security alert, a git push, an incoming API call—not just run on a schedule. This phase delivers the foundational networking modules (`connection:*`, `http:*`) and the `event_driven` lifecycle, allowing ORK to act as a native network server. It also implements the `control:wait_for_signal` module, a powerful primitive for building workflows that require human approval, a common and difficult pattern to implement with traditional tools.
 
 ---
 
@@ -895,13 +895,13 @@ Modern automation is increasingly reactive. Systems must respond to external eve
 
 **Objective:** Enable low-level network and protocol automation, which are the prerequisites for the `event_driven` lifecycle and higher-level modules like `http:request`.
 
-**Rationale:** The GXO-AM mandates that high-level modules are built upon low-level primitives. Before we can have an `event_driven` workload triggered by an HTTP request, the kernel must first understand how to listen for raw TCP connections (Layer 2) and how to parse the HTTP protocol (Layer 3). This milestone builds that foundation.
+**Rationale:** The ORK-AM mandates that high-level modules are built upon low-level primitives. Before we can have an `event_driven` workload triggered by an HTTP request, the kernel must first understand how to listen for raw TCP connections (Layer 2) and how to parse the HTTP protocol (Layer 3). This milestone builds that foundation.
 
 **Impacted Files & Detailed Changes:**
 
 *   **New Directory: `internal/connections/`**
 *   **New File: `internal/connections/manager.go`**
-    *   **Action:** Create a new `ConnectionManager` service within the GXO Kernel. This service is essential for managing the state of long-lived network connections across different workloads.
+    *   **Action:** Create a new `ConnectionManager` service within the ORK Kernel. This service is essential for managing the state of long-lived network connections across different workloads.
     *   **Implementation Detail:**
         ```go
         package connections
@@ -972,7 +972,7 @@ Modern automation is increasingly reactive. Systems must respond to external eve
 
 **Objective:** Implement the `event_driven` lifecycle reconciler within the daemon, enabling reactive workflows.
 
-**Rationale:** This is the second major lifecycle that the daemon must support. It's the core mechanism that allows GXO to act as a SOAR platform, webhook handler, or custom server. Its implementation depends directly on the streaming capabilities delivered in Milestone 4.1.
+**Rationale:** This is the second major lifecycle that the daemon must support. It's the core mechanism that allows ORK to act as a SOAR platform, webhook handler, or custom server. Its implementation depends directly on the streaming capabilities delivered in Milestone 4.1.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1043,7 +1043,7 @@ Modern automation is increasingly reactive. Systems must respond to external eve
 
 **Objective:** Implement the `Resume Context` primitive to enable interactive, approval-based workflows that can pause and wait for external input.
 
-**Rationale:** This feature provides a robust solution for a notoriously difficult automation problem: staging deployments with manual approval gates. Implementing it now leverages the daemon's persistent state store and gRPC control plane, showcasing the power of GXO's integrated architecture.
+**Rationale:** This feature provides a robust solution for a notoriously difficult automation problem: staging deployments with manual approval gates. Implementing it now leverages the daemon's persistent state store and gRPC control plane, showcasing the power of ORK's integrated architecture.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1056,7 +1056,7 @@ Modern automation is increasingly reactive. Systems must respond to external eve
 
         import "errors"
         
-        var ErrPauseWorkflow = errors.New("gxo: signal to pause workflow")
+        var ErrPauseWorkflow = errors.New("ork: signal to pause workflow")
 
         func (m *WaitForSignalModule) Perform(...) (interface{}, error) {
             // The module itself does nothing but signal the engine.
@@ -1080,17 +1080,17 @@ Modern automation is increasingly reactive. Systems must respond to external eve
         1.  The `ResumeWorkflow` method takes a `token` and a JSON `payload`.
         2.  It looks up the token in the `paused_workflows` BoltDB bucket. If not found, it returns `NotFound`.
         3.  It retrieves the paused workflow's state snapshot and the workload ID.
-        4.  It **merges the provided JSON `payload`** into the state snapshot under the reserved key `_gxo.resume_payload`.
+        4.  It **merges the provided JSON `payload`** into the state snapshot under the reserved key `_ork.resume_payload`.
         5.  It signals the main daemon controller to "resume" the paused workload, providing its ID and the newly hydrated state.
         6.  The controller then finds the paused workload and re-schedules its remaining downstream dependencies to run with the updated state.
-*   **`cmd/gxo-ctl/resume.go`**
-    *   **Action:** Add the `gxo-ctl resume --token <token> --payload '{"approved": true}'` command to call the new gRPC endpoint.
+*   **`cmd/ork-ctl/resume.go`**
+    *   **Action:** Add the `ork-ctl resume --token <token> --payload '{"approved": true}'` command to call the new gRPC endpoint.
 
 ---
 
-# **GXO Master Engineering Plan: Phase 5**
+# **ORK Master Engineering Plan: Phase 5**
 
-**Document ID:** GXO-ENG-PLAN-P5
+**Document ID:** ORK-ENG-PLAN-P5
 **Version:** 4.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -1103,7 +1103,7 @@ With the foundational module layers (1-4) in place, this phase builds upon them 
 
 ### **Rationale**
 
-The lower-level modules provide the *capability* to interact with any system, but the higher-level modules provide the *convenience* that drives adoption. Implementing the Layer 5 `http:request` and Layer 6 `terraform:run` modules provides immediate, high-impact solutions to common engineering problems and clearly demonstrates the power of the GXO Automation Model, where complex integrations are built by composing simpler, layered primitives. This phase is critical for showcasing GXO's value proposition as a practical, day-to-day automation tool.
+The lower-level modules provide the *capability* to interact with any system, but the higher-level modules provide the *convenience* that drives adoption. Implementing the Layer 5 `http:request` and Layer 6 `terraform:run` modules provides immediate, high-impact solutions to common engineering problems and clearly demonstrates the power of the ORK Automation Model, where complex integrations are built by composing simpler, layered primitives. This phase is critical for showcasing ORK's value proposition as a practical, day-to-day automation tool.
 
 ---
 
@@ -1111,7 +1111,7 @@ The lower-level modules provide the *capability* to interact with any system, bu
 
 **Objective:** Implement the universal `http:request` module. This is the single most important module for external system integration.
 
-**Rationale:** The vast majority of modern automation involves interacting with REST APIs. A powerful, convenient, and robust `http:request` module is the gateway to integrating GXO with virtually any other platform or service. This module is built upon the Layer 2/3 primitives conceptually but is implemented using Go's mature `net/http` library for performance and feature completeness, abstracting away the raw socket handling for the user.
+**Rationale:** The vast majority of modern automation involves interacting with REST APIs. A powerful, convenient, and robust `http:request` module is the gateway to integrating ORK with virtually any other platform or service. This module is built upon the Layer 2/3 primitives conceptually but is implemented using Go's mature `net/http` library for performance and feature completeness, abstracting away the raw socket handling for the user.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1131,13 +1131,13 @@ The lower-level modules provide the *capability* to interact with any system, bu
             "net/http"
             "time"
             
-            "github.com/gxo-labs/gxo/internal/module"
-            "github.com/gxo-labs/gxo/internal/paramutil"
-            "github.com/gxo-labs/gxo/pkg/gxo/v1/plugin"
-            "github.com/gxo-labs/gxo/pkg/gxo/v1/state"
+            "github.com/ork-labs/ork/internal/module"
+            "github.com/ork-labs/ork/internal/paramutil"
+            "github.com/ork-labs/ork/pkg/ork/v1/plugin"
+            "github.com/ork-labs/ork/pkg/ork/v1/state"
         )
         
-        // HttpRequestModule implements the http:request GXO module.
+        // HttpRequestModule implements the http:request ORK module.
         type HttpRequestModule struct {
             // httpClient is reused across Perform calls for connection pooling (keep-alives).
             httpClient *http.Client
@@ -1273,7 +1273,7 @@ The lower-level modules provide the *capability* to interact with any system, bu
 
 **Objective:** Enhance ETL capabilities and add clients for common data services, building on the core primitives.
 
-**Rationale:** While the critical path covers basic data processing, advanced use cases require more powerful tools like stateful aggregations over time and direct database interaction. This milestone delivers those capabilities, making GXO a viable platform for more complex data integration tasks.
+**Rationale:** While the critical path covers basic data processing, advanced use cases require more powerful tools like stateful aggregations over time and direct database interaction. This milestone delivers those capabilities, making ORK a viable platform for more complex data integration tasks.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1353,7 +1353,7 @@ The lower-level modules provide the *capability* to interact with any system, bu
 
 **Objective:** Provide opinionated, high-level wrappers for key ecosystem tools to create a seamless "better together" experience.
 
-**Rationale:** While users *could* interact with tools like Terraform or SSH using the generic `exec` module, providing dedicated, intelligent wrappers greatly improves the user experience. It reduces boilerplate, enforces best practices, and allows GXO to handle complex state-passing automatically, directly solving the "State Gap" problem.
+**Rationale:** While users *could* interact with tools like Terraform or SSH using the generic `exec` module, providing dedicated, intelligent wrappers greatly improves the user experience. It reduces boilerplate, enforces best practices, and allows ORK to handle complex state-passing automatically, directly solving the "State Gap" problem.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1375,7 +1375,7 @@ The lower-level modules provide the *capability* to interact with any system, bu
         2.  It takes parameters: `path` (to Terraform files), `action` (`apply`, `plan`, `destroy`), and `vars` (a map).
         3.  **Step 1:** Execute `terraform init -input=false -no-color` in the `path` directory. Check the exit code and fail if non-zero.
         4.  **Step 2:** Construct the arguments for the main `terraform` command. For `apply`, this would be `["apply", "-auto-approve", "-no-color"]`. Iterate through the `vars` map and append `-var="key=value"` for each entry.
-        5.  **Step 3:** Execute the main command. Capture `stdout` and `stderr` and stream them to the GXO logger in real-time for user feedback. Fail if the exit code is non-zero.
+        5.  **Step 3:** Execute the main command. Capture `stdout` and `stderr` and stream them to the ORK logger in real-time for user feedback. Fail if the exit code is non-zero.
         6.  **Step 4 (for `apply` only):** If the `apply` succeeds, immediately execute `terraform output -json -no-color`.
         7.  **Step 5:** Capture the stdout of the `output` command, which is a JSON string. Unmarshal this JSON into a `map[string]interface{}`. This map contains the structured Terraform outputs.
         8.  **Step 6:** Return this map of outputs as the module's `summary`. This directly solves the state-passing problem.
@@ -1388,9 +1388,9 @@ The lower-level modules provide the *capability* to interact with any system, bu
 
 ---
 
-# **GXO Master Engineering Plan: Phase 6**
+# **ORK Master Engineering Plan: Phase 6**
 
-**Document ID:** GXO-ENG-PLAN-P6
+**Document ID:** ORK-ENG-PLAN-P6
 **Version:** 4.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -1403,7 +1403,7 @@ The platform is now highly functional with a rich module library. This phase foc
 
 ### **Rationale**
 
-This phase completes the vision of GXO as a truly unified automation kernel. The `event_driven` and `scheduled` lifecycles unlock entire categories of automation (reactive servers, cron job replacement) that are difficult or impossible with traditional task runners. The `Resume Context` for human-in-the-loop workflows solves a critical enterprise use case. Finally, the native testing framework (`gxo test`) elevates GXO from a powerful tool to a mature, professional platform by enabling a Test-Driven Development (TDD) lifecycle for automation engineers.
+This phase completes the vision of ORK as a truly unified automation kernel. The `event_driven` and `scheduled` lifecycles unlock entire categories of automation (reactive servers, cron job replacement) that are difficult or impossible with traditional task runners. The `Resume Context` for human-in-the-loop workflows solves a critical enterprise use case. Finally, the native testing framework (`ork test`) elevates ORK from a powerful tool to a mature, professional platform by enabling a Test-Driven Development (TDD) lifecycle for automation engineers.
 
 ---
 
@@ -1411,7 +1411,7 @@ This phase completes the vision of GXO as a truly unified automation kernel. The
 
 **Objective:** Implement the remaining advanced lifecycle reconcilers in the daemon.
 
-**Rationale:** This milestone delivers the final core execution paradigms. The `event_driven` reconciler enables GXO to act as a reactive server or message queue consumer, while the `scheduled` reconciler provides a robust, integrated replacement for system `cron`.
+**Rationale:** This milestone delivers the final core execution paradigms. The `event_driven` reconciler enables ORK to act as a reactive server or message queue consumer, while the `scheduled` reconciler provides a robust, integrated replacement for system `cron`.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1487,7 +1487,7 @@ This phase completes the vision of GXO as a truly unified automation kernel. The
 
 **Objective:** Implement the `Resume Context` primitive to enable interactive, approval-based workflows that can pause and wait for external input.
 
-**Rationale:** This feature provides a robust solution for a notoriously difficult automation problem: staging deployments with manual approval gates. Implementing it now leverages the daemon's persistent state store and gRPC control plane, showcasing the power of GXO's integrated architecture.
+**Rationale:** This feature provides a robust solution for a notoriously difficult automation problem: staging deployments with manual approval gates. Implementing it now leverages the daemon's persistent state store and gRPC control plane, showcasing the power of ORK's integrated architecture.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1501,7 +1501,7 @@ This phase completes the vision of GXO as a truly unified automation kernel. The
         
         // ErrPauseWorkflow is a sentinel error used to signal the engine to pause execution.
         // It is not a "real" error in the sense of a failure.
-        var ErrPauseWorkflow = errors.New("gxo: signal to pause workflow")
+        var ErrPauseWorkflow = errors.New("ork: signal to pause workflow")
 
         func (m *WaitForSignalModule) Perform(...) (interface{}, error) {
             // The module's only job is to return this specific error.
@@ -1533,25 +1533,25 @@ This phase completes the vision of GXO as a truly unified automation kernel. The
         1.  The `ResumeWorkflow` method takes a `token` and a JSON `payload`.
         2.  It looks up the token in the `paused_workflows` BoltDB bucket. If not found or already used, it returns `NotFound`.
         3.  It retrieves the paused workflow's state snapshot and the paused workload's ID.
-        4.  It deserializes the state, unmarshals the `payload`, and **merges the payload** into the state under the key `_gxo.resume_payload`.
+        4.  It deserializes the state, unmarshals the `payload`, and **merges the payload** into the state under the key `_ork.resume_payload`.
         5.  It signals the main daemon controller to **resume** the playbook from the paused workload, providing its ID and the newly hydrated state. The controller then re-schedules the downstream dependencies to run with the updated state.
         6.  The token is deleted from BoltDB to ensure it is single-use.
-*   **`cmd/gxo-ctl/resume.go`**
-    *   **Action:** Add the `gxo-ctl resume --token <token> --payload '{"approved": true}'` command to call the new gRPC endpoint.
+*   **`cmd/ork-ctl/resume.go`**
+    *   **Action:** Add the `ork-ctl resume --token <token> --payload '{"approved": true}'` command to call the new gRPC endpoint.
 
 ---
 
 ### **Milestone 6.3: The Playbook Mocking Framework**
 
-**Objective:** Introduce a first-class, GXO-native testing and validation experience.
+**Objective:** Introduce a first-class, ORK-native testing and validation experience.
 
-**Rationale:** To drive adoption and enable the creation of complex, reliable automation, users must have the confidence to test their playbooks without affecting live systems. This phase builds a dedicated testing framework directly into the GXO toolchain.
+**Rationale:** To drive adoption and enable the creation of complex, reliable automation, users must have the confidence to test their playbooks without affecting live systems. This phase builds a dedicated testing framework directly into the ORK toolchain.
 
 **Impacted Files & Detailed Changes:**
 
-*   **New File: `cmd/gxo/test.go`**
-    *   **Action:** Define the `gxo test` command, its flags (`-v`, `--run`), and its execution logic.
-    *   **Implementation Detail:** The `runTestCommand` function will recursively discover files matching `*.test.gxo.yaml`, filter them based on the `--run` regex flag, and execute each one in an isolated engine instance, printing structured `=== RUN`, `--- PASS/FAIL`, and `FAIL` summary output similar to `go test`.
+*   **New File: `cmd/ork/test.go`**
+    *   **Action:** Define the `ork test` command, its flags (`-v`, `--run`), and its execution logic.
+    *   **Implementation Detail:** The `runTestCommand` function will recursively discover files matching `*.test.ork.yaml`, filter them based on the `--run` regex flag, and execute each one in an isolated engine instance, printing structured `=== RUN`, `--- PASS/FAIL`, and `FAIL` summary output similar to `go test`.
 *   **New Directory: `modules/test/`**
 *   **New File: `modules/test/mock_http_server.go`**
     *   **Action:** Create the `test:mock_http_server` module.
@@ -1565,14 +1565,14 @@ This phase completes the vision of GXO as a truly unified automation kernel. The
     *   **Implementation Detail (`Perform` method):**
         1.  Parse the `assertions` list parameter.
         2.  Loop through each assertion and use a `switch` statement on the operator key (`equal_to`, `contains`, `is_true`, etc.).
-        3.  If any assertion fails, return an immediate `gxoerrors.NewValidationError` with a descriptive message (e.g., `assertion failed: expected 'a' to be equal to 'b'`).
+        3.  If any assertion fails, return an immediate `orkerrors.NewValidationError` with a descriptive message (e.g., `assertion failed: expected 'a' to be equal to 'b'`).
         4.  If all pass, return `{ "assertions_passed": count }`.
 
 ---
 
-# **GXO Master Engineering Plan: Phase 7**
+# **ORK Master Engineering Plan: Phase 7**
 
-**Document ID:** GXO-ENG-PLAN-P7
+**Document ID:** ORK-ENG-PLAN-P7
 **Version:** 4.0
 **Date:** 2025-07-12
 **Status:** Approved for Execution
@@ -1581,11 +1581,11 @@ This phase completes the vision of GXO as a truly unified automation kernel. The
 
 ### **Objective**
 
-With a feature-complete and testable platform, this final phase implements advanced security controls focused on hardening the workload execution environment and securing the module supply chain, preparing GXO for high-security production deployments.
+With a feature-complete and testable platform, this final phase implements advanced security controls focused on hardening the workload execution environment and securing the module supply chain, preparing ORK for high-security production deployments.
 
 ### **Rationale**
 
-A secure platform requires defense in depth. While Phase 3 secured the "front door" (the control plane), this phase builds the "internal walls" by isolating workloads from each other and the host system using OS-level sandboxing. It also secures the "supply chain" by ensuring that only trusted, verified modules can be executed, preventing the introduction of malicious code into the platform. These capabilities are essential for earning the trust of security teams and for operating GXO with a least-privilege security posture.
+A secure platform requires defense in depth. While Phase 3 secured the "front door" (the control plane), this phase builds the "internal walls" by isolating workloads from each other and the host system using OS-level sandboxing. It also secures the "supply chain" by ensuring that only trusted, verified modules can be executed, preventing the introduction of malicious code into the platform. These capabilities are essential for earning the trust of security teams and for operating ORK with a least-privilege security posture.
 
 ---
 
@@ -1593,7 +1593,7 @@ A secure platform requires defense in depth. While Phase 3 secured the "front do
 
 **Objective:** Implement OS-level sandboxing for workloads as defined in the `security_context` configuration block.
 
-**Rationale:** By default, workloads run with the same permissions as the `gxo daemon` process. This is a potential attack vector. A compromised workload could interfere with other workloads or the host system. The `security_context` provides a declarative way to apply strong, OS-native isolation mechanisms (namespaces, cgroups, seccomp) to dramatically reduce the blast radius of a compromised workload.
+**Rationale:** By default, workloads run with the same permissions as the `ork daemon` process. This is a potential attack vector. A compromised workload could interfere with other workloads or the host system. The `security_context` provides a declarative way to apply strong, OS-native isolation mechanisms (namespaces, cgroups, seccomp) to dramatically reduce the blast radius of a compromised workload.
 
 **Impacted Files & Detailed Changes:**
 
@@ -1650,7 +1650,7 @@ A secure platform requires defense in depth. While Phase 3 secured the "front do
 *   **`internal/engine/workload_runner.go`:**
     *   **Action:** This is the core enforcement point. The `ExecuteWorkload` method must be re-architected to support forking a sandboxed child process. This cannot be done in the same process space and requires a re-entrant binary.
     *   **Implementation Strategy: Re-entrant Binary Fork/Exec Model**
-        1.  **Introduce an internal command:** Add a new, hidden command to `cmd/gxo/main.go`, e.g., `gxo --internal-run-sandboxed-workload`. This command will be called by the daemon on itself. It will not be visible in the main help text.
+        1.  **Introduce an internal command:** Add a new, hidden command to `cmd/ork/main.go`, e.g., `ork --internal-run-sandboxed-workload`. This command will be called by the daemon on itself. It will not be visible in the main help text.
         2.  **Modify `ExecuteWorkload`:**
             *   Check if `workload.SecurityContext` is defined.
             *   If **NO**, execute the module `in-process` as it does today.
@@ -1677,8 +1677,8 @@ A secure platform requires defense in depth. While Phase 3 secured the "front do
 
 **Impacted Files & Detailed Changes:**
 
-*   **New File: `cmd/gxo-admin/sign.go`**
-    *   **Action:** Create a new `gxo-admin sign-module` command.
+*   **New File: `cmd/ork-admin/sign.go`**
+    *   **Action:** Create a new `ork-admin sign-module` command.
     *   **Rationale:** Provide a canonical, user-friendly way for module developers and platform administrators to sign their custom modules.
     *   **Implementation Detail:**
         1.  This tool will be a wrapper around the `sigs.k8s.io/release-utils/sign` and `github.com/sigstore/cosign` libraries.
@@ -1695,8 +1695,8 @@ A secure platform requires defense in depth. While Phase 3 secured the "front do
         module_verification:
           # A list of paths to PEM-encoded public keys.
           trusted_public_keys:
-            - /etc/gxo/keys/prod_module_signer.pub
-            - /etc/gxo/keys/dev_module_signer.pub
+            - /etc/ork/keys/prod_module_signer.pub
+            - /etc/ork/keys/dev_module_signer.pub
           # Policy can be "enforce" (fail-closed) or "log_only" (permissive).
           policy: "enforce"
         ```
@@ -1711,7 +1711,7 @@ A secure platform requires defense in depth. While Phase 3 secured the "front do
         2.  When `ExecuteWorkload` is called, it gets the `moduleName` from `workload.Process.Module`.
         3.  The `WorkloadRunner` calls `verifier.Verify(moduleName)`.
         4.  The `Verify` method's logic:
-            a.  First, it checks against an embedded manifest of standard library modules and their digests. If the module is a built-in GXO module, it is considered trusted by default.
+            a.  First, it checks against an embedded manifest of standard library modules and their digests. If the module is a built-in ORK module, it is considered trusted by default.
             b.  If it's a custom module (not in the manifest), the verifier will determine its path on the filesystem.
             c.  It will look for a corresponding signature file (e.g., `<module_path>.sig`). If not found and policy is `enforce`, it fails.
             d.  It calculates the SHA256 digest of the module binary on disk.
