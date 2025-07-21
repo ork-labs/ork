@@ -103,11 +103,57 @@ An ALK can produce a single, authoritative audit trail that is non-bypassable by
 
 Because an ALK is the single, mandatory gateway for all significant actions—scheduling a workload, accessing state, sending a message, performing I/O via a module—it can generate an authoritative log entry at the source of every event. A workload cannot perform a meaningful action without interacting with the kernel's APIs and therefore cannot bypass this intrinsic audit mechanism. This allows the ALK to produce a single, unified, and verifiable record of all system activity, which can be cryptographically signed or chained to ensure it is tamper-evident. This provides a fundamentally more trustworthy and complete source of truth for security forensics and operational debugging.
 
-## **4. On Implementation: The `Ork` Reference**
+### **4. The Application-Layer Kernel Trust Model**
+
+The designation of an ALK as a "kernel" is fundamentally a claim about trust. A kernel, by definition, is the Trusted Computing Base (TCB) for its domain. For an ALK, this domain is the entire lifecycle of its `Workloads`. This section defines the ALK's trust model, its threat boundaries, and the responsibilities of the platform versus the user.
+
+An ALK is trusted by the platform operator. The operator grants the ALK process its permissions on the host system and trusts it to be the sole, authoritative mediator for all workloads it manages. The ALK, in turn, is responsible for constraining its workloads within the policies defined by the operator. The primary threat model for an ALK is therefore the malicious or buggy workload. The kernel's core function is to act as a reference monitor for the application layer, ensuring that no workload can compromise the kernel itself, other workloads, or the underlying host system beyond its explicitly granted permissions.
+
+This creates a clear chain of trust: the operator trusts the ALK, and the ALK distrusts and constrains its workloads. This model is realized through the six pillars of the ALK definition. The criteria of Verifiable Isolation Boundaries, Intrinsic Security, and Authoritative Observability are not just features; they are the architectural mechanisms that create and enforce this trust boundary. For example, a workload is prevented from accessing another's state by the kernel's state isolation mechanisms, and the authoritative audit trail provides the non-repudiable proof that this policy was enforced for every transaction.
+
+This model implies a shared security responsibility. The ALK is responsible for securing the runtime, the execution environment, and the interactions between workloads. The user or module developer, however, remains responsible for the security of the logic *within* a `Module`. An ALK can prevent a vulnerable module from accessing the filesystem or making unauthorized network calls, but it cannot prevent that module from having a logical flaw in its own code, such as a miscalculation or an improper authorization check. The kernel provides a secure sandbox; the user provides the secure application to run within it.
+
+### **5. A Taxonomy of Prior Art and Adjacent Architectures**
+
+The claim of a new architectural class requires a rigorous comparison to prior art. The Application-Layer Kernel is distinguished from other systems not by a single feature, but by its native ownership of all six defining criteria. Other platforms may excel at one or more of these responsibilities, but they achieve their goals by delegating other core functions, thereby placing them in a different architectural category. The principle of native ownership versus delegation is the defining line.
+
+#### **5.1. Package Orchestrators (e.g., Kubernetes, Nomad)**
+
+Systems like Kubernetes and Nomad function as powerful kernels for the infrastructure and container lifecycle. Their primary resource domain is the container, which they treat as an opaque package. They excel at scheduling and scaling these packages. However, they do not own the process *inside* the container. The responsibilities for application-level state management, intra-process IPC, and the specific security constraints of the running code are delegated to the container runtime and the application framework itself. These systems are not ALKs because they operate at a different layer of abstraction, managing the box rather than the logic within it.
+
+#### **5.2. Declarative State Engines (e.g., Terraform, Pulumi)**
+
+Tools such as Terraform are masters of declarative state convergence. Their core function is to compare a desired state against an external system and apply changes to reconcile them. While they manage state and have modules, they are highly specialized, non-interactive state machines. They lack multi-modal workload management, as they are designed to execute a single transaction and then exit. They also have no native real-time IPC, and their execution logic is delegated to provider plugins.
+
+#### **5.3. Durable Workflow-as-Code Frameworks (e.g., Temporal, Cadence)**
+
+These platforms provide a library or framework for writing durable, stateful functions in a general-purpose programming language. Their core innovation lies in abstracting away state persistence and retries. However, they are not kernels in the ALK sense because they explicitly delegate the execution runtime itself to a fleet of user-managed worker processes. They are a powerful programming model for durable code, but not a self-contained, integrated kernel that owns the entire execution environment.
+
+#### **5.4. DAG-Based Task Schedulers (e.g., Apache Airflow)**
+
+Task schedulers like Airflow are classic examples of passive orchestrators. They are excellent at scheduling complex DAGs of tasks, but they explicitly fail the native ownership principle. Airflow's core model is to delegate the execution of every task to an external worker and environment. By delegating execution, it necessarily gives up its ability to provide intrinsic security, native IPC, or a single, authoritative audit trail. It is a manager of tasks, not a kernel for them.
+
+#### **5.5. Configuration Management Tools (e.g., Ansible, Chef, Puppet)**
+
+These tools excel at bringing systems into a desired declarative state. However, they are designed primarily for the domain of system configuration and are not general-purpose, multi-modal kernels. They lack native primitives for other workload types, such as supervised services or high-throughput streaming pipelines. Furthermore, their architectural model is typically agent-based, where a central controller communicates with a remote agent that performs the execution. This delegation model is fundamentally different from the single-kernel trust boundary defined by an ALK.
+
+#### **5.6. CI/CD Platforms (e.g., GitLab CI, GitHub Actions, Jenkins)**
+
+While these platforms also execute workflows, they are architecturally event-driven coordinators of external runners. Their primary function is to listen for source control events (like a `git push`) and dispatch jobs to a fleet of ephemeral execution environments (runners). The platform itself does not own the execution; it delegates it entirely to the runner, which could be a Docker container, a virtual machine, or a process on a build server. They do not provide the native IPC, integrated state management, or the single, unified trust boundary that an ALK requires.
+
+#### **5.7. Serverless / FaaS Platforms (e.g., AWS Lambda, Google Cloud Functions)**
+
+Function-as-a-Service platforms are perhaps the closest in spirit to the ALK's event-driven mode, but they are architecturally different. A FaaS platform is a highly-abstracted, multi-tenant execution service, not an integrated kernel. They excel at running stateless functions in response to events. However, they achieve this by delegating nearly all of the other kernel responsibilities to separate services within their cloud ecosystem. State is managed in an external database (DynamoDB), IPC is handled by an external message queue (SQS), and security is configured via an external identity system (IAM). The platform provides a runtime for code, but it does not provide the single, unified control plane that defines an ALK.
+
+#### **5.8. Streaming Data Processing Platforms (e.g., Apache Flink, Spark Streaming)**
+
+These platforms are highly specialized for large-scale, distributed data transformation. They can be seen as kernels for the domain of data streams. They provide some of the ALK criteria, such as state management (for windows and aggregations) and a form of IPC. However, they are not general-purpose, multi-modal kernels. They are not designed to manage supervised services, execute simple ad-hoc automation tasks, or provide the fine-grained, process-level security sandboxing that an ALK defines. Their focus is on data-plane optimization, not on providing a unified runtime for a broad class of workloads.
+
+## **6. On Implementation: The `Ork` Reference**
 
 This standard defines what an ALK must do. The `Ork` project is the first reference implementation of an Application-Layer Kernel. It is built on a philosophy of orthogonality, treating a workload’s `Process`, `Lifecycle`, and `Security Context` as independent, interchangeable properties, which is one powerful way to realize the ALK standard.
 
-## **5. Revision History**
+## **7. Revision History**
 
 | Version | Date | Notes |
 | :--- | :--- | :--- |
