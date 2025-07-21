@@ -47,7 +47,7 @@ This principle of native ownership is a core differentiator. A system that deleg
 
 ### **2.4. Guaranteed Inter-Workload Channels (IPC)**
 
-An Application-Layer Kernel must provide guaranteed Inter-Workload Communication (IPC) via a native channel abstraction. This ensures reliable, high-throughput data flow between workloads. This guarantee must include flow control, such as back-pressure, to ensure that a slow consumer will gracefully pause a producer, preserving system stability without data loss. This parallels an OS kernel's role in providing reliable IPC primitives like pipes and sockets.
+An Application-Layer Kernel must provide guaranteed Inter-Workload Communication (IPC) via a native channel abstraction. This ensures reliable, high-throughput data flow between workloads. This guarantee must include flow control, such as back-pressure, to ensure that a slow consumer will gracefully pause a producer, preserving system stability without data loss. If back-pressure lived outside the kernel, a slow consumer could deadlock the producer without the kernel ever noticing, creating an unacceptable blind spot. This parallels an OS kernel's role in providing reliable IPC primitives like pipes and sockets.
 
 This native IPC is essential for enabling reliable, high-performance composition. Without it, developers are forced to revert to fragile, out-of-band communication methods like intermediate files or external message queues. This re-introduces performance bottlenecks, observability gaps, and the very "glue code" liability the kernel is designed to eliminate. A kernel that cannot reliably connect its own managed processes is an incomplete and fundamentally flawed architecture.
 
