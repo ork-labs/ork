@@ -580,7 +580,7 @@ The architectural vision of ORK as a unified runtime for services, events, and t
 
 **Objective:** Replace the volatile in-memory state store with a persistent, production-grade alternative using BoltDB.
 
-**Rationale:** A daemon must survive restarts and maintain its state. The `MemoryStateStore` is insufficient for this purpose. BoltDB is chosen for its simplicity, transactional guarantees, and lack of external dependencies, making it a perfect fit for a self-contained ORK daemon. Encryption at rest is a foundational security requirement.
+**Rationale:** A daemon must survive restarts and maintain its state. The `MemoryStateStore` is insufficient for this purpose. BoltDB (https://github.com/etcd-io/bbolt) is chosen for its simplicity, transactional guarantees, and lack of external dependencies, making it a perfect fit for a self-contained ORK daemon. Encryption at rest is a foundational security requirement.
 
 **Impacted Files & Detailed Changes:**
 
@@ -592,7 +592,7 @@ The architectural vision of ORK as a unified runtime for services, events, and t
         package boltdb
 
         import (
-            "github.com/boltdb/bolt"
+            "github.com/etcd-io/bbolt"
             // ... other imports: crypto/aes, crypto/cipher, encoding/gob, etc.
         )
         
