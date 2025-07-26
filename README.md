@@ -1,2 +1,2 @@
 # ork
-Orthogonal Runetime Kernel
+Orthogonal Runtime Kernel
