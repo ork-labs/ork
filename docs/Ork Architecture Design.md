@@ -79,19 +79,19 @@ The Ork kernel is a self-contained system composed of several specialized, coope
 ```mermaid
 graph TD
     subgraph "User Interaction"
-        A[ork ctl / API Client] -- "gRPC (mTLS)" --> B[ork daemon];
-        CLI[ork run] --> B;
+        A["ork ctl / API Client"] -- "gRPC (mTLS)" --> B[ork daemon];
+        CLI["ork run"] --> B;
     end
 
     subgraph "Ork Kernel"
-        B -- "Receives Command" --> C[Daemon Controller];
+        B -- "Receives Command" --> C["Daemon Controller"];
 
         subgraph "Control Plane & Lifecycle Management"
-            D[gRPC Server];
-            E[Reconciler Loops];
-            F[Supervise Reconciler];
-            G[Event-Driven Reconciler];
-            H[Scheduled Reconciler];
+            D["gRPC Server"];
+            E["Reconciler Loops"];
+            F["Supervise Reconciler"];
+            G["Event-Driven Reconciler"];
+            H["Scheduled Reconciler"];
 
             C -- "Manages" --> D;
             C -- "Manages" --> E;
@@ -101,8 +101,8 @@ graph TD
         end
 
         subgraph "Ephemeral Execution Core (The 'Engine')"
-            I[Scheduler & DAG Builder];
-            J[Workload Runner];
+            I["Scheduler & DAG Builder"];
+            J["Workload Runner"];
             
             C -- "Delegates 'run_once' to" --> I;
             F & G & H -- "Instantiate via" --> I;
@@ -110,11 +110,11 @@ graph TD
         end
 
         subgraph "Shared Kernel Services"
-            S1[State Store (BoltDB)];
-            S2[Workspace Manager];
-            S3[Module Registry & Verifier];
-            S4[Channel Manager (IPC)];
-            S5[Audit Logger];
+            S1["State Store (BoltDB)"];
+            S2["Workspace Manager"];
+            S3["Module Registry & Verifier"];
+            S4["Channel Manager (IPC)"];
+            S5["Audit Logger"];
         end
 
         J -- "Uses" --> S1 & S2 & S3 & S4 & S5;
@@ -189,16 +189,16 @@ sequenceDiagram
     participant C as Daemon Controller
     participant SR as SuperviseReconciler
     participant S as Scheduler
-    participant W as Workload (Process)
+    participant W as "Workload (Process)"
 
-    C->>+SR: StartReconciler(workload)
+    C->+SR: StartReconciler(workload)
     SR->>SR: Enter Reconciliation Loop
     loop
         SR->>SR: Is process running? (No)
         SR->>+S: RunWorkload(workload)
         S->>+W: Start Process
         W-->>-S: Process Exits (Failure)
-        S-->>-SR: Return Failure Result
+        S-->>SR: Return Failure Result
         SR->>SR: Consult Restart Policy
         SR->>SR: Calculate Exponential Backoff Delay
         SR->>SR: time.Sleep(delay)
