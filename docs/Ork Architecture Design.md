@@ -1,7 +1,7 @@
 # **Ork: Architecture & Design Specification**
 
 **Document ID:** ORK-ARCH-SPEC
-**Version:** 2.0
+**Version:** 1.0
 **Status:** Approved Technical Blueprint
 **Audience:** Ork Developers & Contributors, Systems Architects evaluating Ork's design.
 
@@ -117,18 +117,29 @@ graph TD
             S5["Audit Logger"];
         end
 
-        J -- "Uses" --> S1 & S2 & S3 & S4 & S5;
-        C -- "Uses" --> S1 & S5;
+        %% Explicit Connections to fix rendering
+        J -- "Uses" --> S1;
+        J -- "Uses" --> S2;
+        J -- "Uses" --> S3;
+        J -- "Uses" --> S4;
+        J -- "Uses" --> S5;
+        
+        C -- "Uses" --> S1;
+        C -- "Uses" --> S5;
     end
 
-    style A fill:#cde4ff,stroke:#5a96e6,stroke-width:2px;
-    style CLI fill:#cde4ff,stroke:#5a96e6,stroke-width:2px;
-    style B fill:#e1d5e7,stroke:#9673a6;
-    style C fill:#fff2cc,stroke:#d6b656,stroke-width:3px;
-    style E fill:#dae8fc,stroke:#6c8ebf;
-    style I fill:#dae8fc,stroke:#6c8ebf;
-    style J fill:#d5e8d4,stroke:#82b366;
-    style S1,S2,S3,S4,S5 fill:#f8cecc,stroke:#b85450;
+    %% Styling Definitions
+    style A fill:#cde4ff,stroke:#5a96e6,stroke-width:2px,color:#333;
+    style CLI fill:#cde4ff,stroke:#5a96e6,stroke-width:2px,color:#333;
+    style B fill:#e1d5e7,stroke:#9673a6,color:#333;
+    style C fill:#fff2cc,stroke:#d6b656,stroke-width:3px,color:#333;
+    style E fill:#dae8fc,stroke:#6c8ebf,color:#333;
+    style I fill:#dae8fc,stroke:#6c8ebf,color:#333;
+    style J fill:#d5e8d4,stroke:#82b366,color:#333;
+
+    %% Class-based styling for Shared Services
+    classDef sharedServiceStyle fill:#f8cecc,stroke:#b85450,color:#333;
+    class S1,S2,S3,S4,S5 sharedServiceStyle;
 ```
 
 **Data Flow 1: Ephemeral Execution (`ork run`)**
@@ -191,19 +202,26 @@ sequenceDiagram
     participant S as Scheduler
     participant W as "Workload (Process)"
 
-    C->+SR: StartReconciler(workload)
-    SR->>SR: Enter Reconciliation Loop
+    C->>SR: StartReconciler(workload)
+    activate SR
+
     loop
-        SR->>SR: Is process running? (No)
-        SR->>+S: RunWorkload(workload)
-        S->>+W: Start Process
-        W-->>-S: Process Exits (Failure)
+        SR->>S: RunWorkload(workload)
+        activate S
+        S->>W: Start Process
+        activate W
+        W-->>S: Process Exits (Failure)
+        deactivate W
         S-->>SR: Return Failure Result
+        deactivate S
+        
         SR->>SR: Consult Restart Policy
         SR->>SR: Calculate Exponential Backoff Delay
         SR->>SR: time.Sleep(delay)
     end
-    C->>-SR: StopReconciler()
+
+    C->>SR: StopReconciler()
+    deactivate SR
 ```
 
 When started by the `Controller`, the `SuperviseReconciler` enters its main loop. It first observes that its target process is not running and requests that the `Scheduler` instantiate the workload. If the process later terminates, the reconciler detects this state change. It consults the workload's `restart` policy and, if a restart is required, calculates a new delay using an exponential backoff algorithm with jitter. This prevents rapid crash-loops from overwhelming the system. It then waits for this delay before repeating the cycle, continuously reconciling the system's actual state toward the desired state: "this process should be running."
@@ -265,17 +283,17 @@ A key feature of this native IPC is **guaranteed back-pressure**. This mechanism
 
 ```mermaid
 graph TD
-    A[Producer] -- Writes Record 1 --> B{Channel (Buffer: 2)};
-    A -- Writes Record 2 --> B;
-    subgraph Channel State
+    A["Producer"] -- "Writes Record 1" --> B{"Channel (Buffer: 2)"};
+    A -- "Writes Record 2" --> B;
+    subgraph "Channel State"
         direction LR
-        B -- Contains --> R1[Record 1];
-        B -- Contains --> R2[Record 2];
+        B -- "Contains" --> R1["Record 1"];
+        B -- "Contains" --> R2["Record 2"];
     end
-    C[Consumer] -- Is Slow / Blocked --> B;
-    A -.->|Write Record 3 (BLOCKS)| B;
-    C -- Reads Record 1 --> B;
-    A -- Write Record 3 (Unblocks) --> B;
+    C["Consumer"] -- "Is Slow / Blocked" --> B;
+    A -.->|"Write Record 3 (BLOCKS)"| B;
+    C -- "Reads Record 1" --> B;
+    A -- "Write Record 3 (Unblocks)" --> B;
 ```
 
 As the diagram illustrates, if a consumer is slow to process records, the channel's buffer will fill. The producer's next attempt to write to the channel will block the producer's goroutine, gracefully pausing it. Once the consumer reads a record and frees up buffer space, the producer's write operation will automatically unblock. This prevents a fast producer from overwhelming a slow consumer, eliminating a common source of memory exhaustion and cascading failures in streaming systems.
